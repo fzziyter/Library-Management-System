@@ -1,0 +1,113 @@
+.list-container {
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f1f2f6;
+}
+
+.btn-add {
+    background-color: #00b894;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* --- ALIGNEMENT CENTRE POUR L'EN-TÊTE --- */
+th {
+    background-color: #f8f9fa;
+    color: #636e72;
+    text-align: center; 
+    padding: 15px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    border-bottom: 2px solid #dee2e6;
+}
+table{
+    text-align: center;
+}
+/* --- ALIGNEMENT CENTRE POUR LES CELLULES --- */
+td {
+    padding: 15px;
+    border-bottom: 1px solid #f1f2f6;
+    color: #2d3436;
+    font-size: 0.95rem;
+    text-align: center; 
+    vertical-align: middle;
+}
+
+.actions-cell {
+    display: flex;
+    justify-content: center; /* Centre les boutons horizontalement */
+    gap: 8px;
+}
+
+.badge-category {
+    background-color: #dfe6e9;
+    color: #2d3436;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.btn-edit { background-color: #0984e3; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+.btn-delete { background-color: #d63031; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+.filter-bar {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.filter-input {
+    flex: 2;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.filter-select {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    background-color: white;
+}
+
+.no-result {
+    text-align: center;
+    padding: 20px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* On s'assure que le header est bien aligné */
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}

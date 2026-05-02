@@ -1,0 +1,118 @@
+/* ListCategorie.css */
+
+.cat-container {
+    max-width: 600px; /* Plus étroit car moins de colonnes */
+    margin: 40px auto;
+    padding: 25px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.cat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.cat-header h1 {
+    font-size: 1.6rem;
+    color: #2d3436;
+    margin: 0;
+}
+
+.btn-add-cat {
+    background-color: #6c5ce7;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-add-cat:hover {
+    background-color: #5b4cc4;
+}
+
+.cat-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.cat-table th {
+    text-align: left;
+    padding: 12px;
+    background-color: #f8f9fa;
+    color: #636e72;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    border-bottom: 2px solid #edf2f7;
+}
+
+.cat-table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #edf2f7;
+    color: #2d3436;
+}
+
+.cat-table tr:last-child td {
+    border-bottom: none;
+}
+
+.cat-id {
+    font-family: monospace;
+    color: #b2bec3;
+    font-weight: bold;
+}
+
+.btn-delete-cat {
+    background-color: #ff7675;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: opacity 0.2s;
+}
+
+.btn-delete-cat:hover {
+    background-color: #d63031;
+}
+
+.loading-text {
+    text-align: center;
+    color: #636e72;
+    padding: 20px;
+}
+/* ... (reste du code précédent) ... */
+
+.cat-table th {
+    text-align: center; /* Centre le texte des titres */
+    padding: 12px;
+    background-color: #f8f9fa;
+    color: #636e72;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    border-bottom: 2px solid #edf2f7;
+}
+
+.cat-table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #edf2f7;
+    color: #2d3436;
+    text-align: center; /* Centre le contenu de toutes les lignes */
+    vertical-align: middle;
+}
+
+/* On peut garder les actions alignées au centre aussi pour la cohérence */
+.actions-cell {
+    display: flex;
+    justify-content: center; /* Centre le bouton dans la cellule */
+    gap: 8px;
+}

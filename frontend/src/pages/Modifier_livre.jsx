@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-
+import './Modifier_livre.css';
 const Modifier_livre = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -75,44 +75,61 @@ const Modifier_livre = () => {
     };
 
     return (
-        <div>
-            <h2>Modifier un livre</h2>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Titre:</label>
-                    <input type="text" name="titre" value={livre.titre} onChange={handleChange} required />
+        <div className="edit-container">
+            <h2 className="edit-title">Modifier le Livre</h2>
+            
+            <form onSubmit={handleSubmit} className="edit-form">
+                
+                <div className="form-section">
+                    <div className="input-group full-width">
+                        <label>Titre du livre</label>
+                        <input type="text" name="titre" value={livre.titre} onChange={handleChange} required />
+                    </div>
+
+                    <div className="input-group">
+                        <label>ISBN</label>
+                        <input type="text" name="isbn" value={livre.isbn} onChange={handleChange} required />
+                    </div>
+
+                    <div className="input-group">
+                        <label>Catégorie</label>
+                        <select name="categorie" value={livre.categorie?.id || ""} onChange={handleChange} required>
+                            <option value="">Choisir...</option>
+                            {categories.map((cat) => (
+                                <option key={cat.id} value={cat.id}>{cat.libelle}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <hr className="full-width" />
+                    <h3 className="section-subtitle">Détails techniques</h3>
+
+                    <div className="input-group">
+                        <label>Nombre de pages</label>
+                        <input type="number" name="nombrePages" value={livre.details?.nombrePages || ""} onChange={handleChange} />
+                    </div>
+
+                    <div className="input-group">
+                        <label>Rayon (Emplacement)</label>
+                        <input type="text" name="emplacementRayon" value={livre.details?.emplacementRayon || ""} onChange={handleChange} />
+                    </div>
+
+                    <div className="input-group full-width">
+                        <label>Auteur</label>
+                        <input type="text" name="auteur" value={livre.details?.auteur || ""} onChange={handleChange} />
+                    </div>
                 </div>
-                <div>
-                    <label>ISBN:</label>
-                    <input type="text" name="isbn" value={livre.isbn} onChange={handleChange} required />
+
+                <div className="button-group">
+                    <button type="submit" className="btn-save">Enregistrer les modifications</button>
+                    <button type="button" className="btn-cancel" onClick={() => navigate("/listLivres")}>
+                        Annuler
+                    </button>
                 </div>
-                <div>
-                    <label>Catégorie:</label>
-                    <select name="categorie" value={livre.categorie?.id || ""} onChange={handleChange} required>
-                        <option value="">Sélectionnez une catégorie</option>
-                        {categories.map((cat) => (
-                            <option key={cat.id} value={cat.id}>{cat.libelle}</option>
-                        ))}
-                    </select>
-                </div>
-                <hr />
-                <div>
-                    <label>Nombre de pages:</label>
-                    <input type="number" name="nombrePages" value={livre.details?.nombrePages || ""} onChange={handleChange} />
-                </div>
-                <div>
-                    <label>Rayon:</label>
-                    <input type="text" name="emplacementRayon" value={livre.details?.emplacementRayon || ""} onChange={handleChange} />
-                </div>
-                <div>
-                    <label>Auteur:</label>
-                    <input type="text" name="auteur" value={livre.details?.auteur || ""} onChange={handleChange} />
-                </div>
-                <button type="submit" >Enregistrer</button>
-                <button type="button" onClick={() => navigate("/listeLivre")}>Annuler</button>
             </form>
         </div>
     );
+
 };
 
 export default Modifier_livre;
