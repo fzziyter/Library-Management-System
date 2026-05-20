@@ -5,6 +5,8 @@ import lombok.*;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Getter @Setter @NoArgsConstructor
 public class User {
@@ -13,7 +15,7 @@ public class User {
     
     @Column(unique = true)
     private String username;
-    
+    @JsonIgnore  // ADD THIS — never send password in responses
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER)

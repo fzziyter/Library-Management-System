@@ -20,3 +20,6 @@ springdoc:
   api-docs:
     # C'est ici que tu changes l'URL du JSON brut (si besoin)
     path: /v3/api-docs
+    enabled: true
+
+  
