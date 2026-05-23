@@ -12,6 +12,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+// Nouveaux imports à ajouter en haut
+import com.example.backend.dto.SignupRequest;
+import com.example.backend.entity.User;
+import com.example.backend.service.UserService;
+import com.example.backend.repository.UserRepository;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,31 +27,54 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired
-    AuthenticationManager authenticationManager;
+        @Autowired
+        AuthenticationManager authenticationManager;
 
-    @Autowired
-    JwtUtils jwtUtils;
+        @Autowired
+        JwtUtils jwtUtils;
+        @Autowired
+        UserService userService;
 
-    @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        @Autowired
+        UserRepository userRepository;
 
-        // Vérifie les identifiants (Spring s'occupe de hacher le password soumis pour le comparer avec la BDD via BCrypt)
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+        @PostMapping("/signin")
+        public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        String jwt = jwtUtils.generateJwtToken(userDetails);
-        
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(item -> item.getAuthority())
-                .collect(Collectors.toList());
+                // Vérifie les identifiants (Spring s'occupe de hacher le password soumis pour
+                // le comparer avec la BDD via BCrypt)
+                Authentication authentication = authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
+                                                loginRequest.getPassword()));
 
-        return ResponseEntity.ok(new JwtResponse(jwt, 
-                                                 userDetails.getId(), 
-                                                 userDetails.getUsername(), 
-                                                 roles));
-    }
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+                String jwt = jwtUtils.generateJwtToken(userDetails);
+
+                List<String> roles = userDetails.getAuthorities().stream()
+                                .map(item -> item.getAuthority())
+                                .collect(Collectors.toList());
+
+                return ResponseEntity.ok(new JwtResponse(jwt,
+                                userDetails.getId(),
+                                userDetails.getUsername(),
+                                roles));
+        }
+
+        @PostMapping("/signup")
+        public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
+                if (userRepository.findByUsername(signupRequest.getUsername()).isPresent()) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                        .body("Erreur: Ce nom d'utilisateur est déjà pris.");
+                }
+
+                User user = new User();
+                user.setUsername(signupRequest.getUsername());
+                user.setPassword(signupRequest.getPassword());
+
+                userService.saveUser(user, "USER");
+
+                return ResponseEntity.ok("Compte créé avec succès.");
+        }
 }

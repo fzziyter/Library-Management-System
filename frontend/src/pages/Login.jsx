@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { saveAuth } from '../services/auth';
 import './Login.css';
 
@@ -90,6 +90,12 @@ const Login = () => {
               {loading ? 'Connexion en cours…' : 'Se connecter'}
             </button>
           </form>
+          <p style={{ marginTop: '24px', fontSize: '0.88rem', color: '#7a6e8a', textAlign: 'center' }}>
+            Pas encore de compte ?{' '}
+            <Link to="/signup" style={{ color: '#a78bfa', textDecoration: 'none', fontWeight: '500' }}>
+              Créer un compte
+            </Link>
+          </p>
         </div>
       </div>
     </div>

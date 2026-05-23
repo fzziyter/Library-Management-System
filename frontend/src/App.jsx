@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { isLoggedIn, getUser } from './services/auth';
 import './services/auth'; // activates axios interceptors
+import SignUp from './pages/SignUp.jsx';
 
 import Login from './pages/Login.jsx';
 import Navbar from './components/Navbar.jsx';
@@ -36,6 +37,7 @@ function App() {
       <Routes>
         {/* Public */}
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
 
         {/* Protected — all logged-in users */}
         <Route path="/" element={
