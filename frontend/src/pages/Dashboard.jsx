@@ -43,47 +43,67 @@ const Dashboard = () => {
 
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(""); // État pour capturer les anomalies et retours du GlobalExceptionHandler
 
   useEffect(() => {
-    axios.get('/api/export/stats')
-      .then(res => setStats(res.data))
-      .catch(() => setStats(null))
+    setError("");
+    axios.get('http://localhost:8080/api/export/stats')
+      .then(res => {
+        setStats(res.data);
+      })
+      .catch((err) => {
+        console.error("Erreur lors de la récupération des statistiques :", err);
+        setStats(null);
+        if (err.response?.status === 403) {
+          setError("Accès refusé : Privilèges insuffisants pour charger les statistiques analytiques.");
+        } else {
+          setError("Impossible de charger les indicateurs système depuis le serveur.");
+        }
+      })
       .finally(() => setLoading(false));
   }, []);
 
-const handleExport = async (type) => {
-  const token = sessionStorage.getItem('token');  // ← sessionStorage, pas localStorage
+  const handleExport = async (type) => {
+    setError("");
+    const token = sessionStorage.getItem('token');
 
-  if (!token) {
-    alert('Token introuvable, veuillez vous reconnecter.');
-    return;
-  }
-
-  try {
-    const response = await fetch(`http://localhost:8080/api/export/${type}`, {
-      method: 'GET',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      alert(`Erreur ${response.status}: ${text}`);
+    if (!token) {
+      setError("Token d'authentification introuvable. Veuillez vous reconnecter.");
       return;
     }
 
-    const blob = await response.blob();
-    const url  = window.URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = type === 'pdf' ? 'catalogue_livres.pdf' : 'catalogue_livres.xlsx';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
-  } catch (err) {
-    alert('Erreur réseau : ' + err.message);
-  }
-};
+    try {
+      const response = await fetch(`http://localhost:8080/api/export/${type}`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        // Intercepte les erreurs structurées du GlobalExceptionHandler renvoyées en format texte/json
+        const text = await response.text();
+        try {
+          const jsonError = JSON.parse(text);
+          setError(jsonError.message || `Erreur de traitement sur l'export (${response.status})`);
+        } catch {
+          setError(`Une anomalie est survenue lors de l'export ${type.toUpperCase()} (Code: ${response.status}).`);
+        }
+        return;
+      }
+
+      const blob = await response.blob();
+      const url  = window.URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = type === 'pdf' ? 'catalogue_livres.pdf' : 'catalogue_livres.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(`Erreur réseau lors de l'export ${type} :`, err);
+      setError("Le serveur est injoignable. Impossible de générer le fichier d'export.");
+    }
+  };
 
   return (
     <div className="dashboard-wrapper">
@@ -93,27 +113,50 @@ const handleExport = async (type) => {
         <p>Tableau de bord de la bibliothèque</p>
       </div>
 
-      {/* KPI Cards */}
-      {!loading && stats && (
-        <div className="kpi-grid">
-          <div className="kpi-card">
-            <div className="kpi-emoji">📚</div>
-            <div className="kpi-value">{stats.totalLivres}</div>
-            <div className="kpi-label">Livres</div>
-          </div>
-          <div className="kpi-card">
-            <div className="kpi-emoji">🏷️</div>
-            <div className="kpi-value">{stats.totalCategories}</div>
-            <div className="kpi-label">Catégories</div>
-          </div>
-          {isAdmin && (
-            <div className="kpi-card">
-              <div className="kpi-emoji">👥</div>
-              <div className="kpi-value">{stats.totalUsers}</div>
-              <div className="kpi-label">Utilisateurs</div>
-            </div>
-          )}
+      {/* Affichage globalisé des bannières d'erreur au premier plan */}
+      {error && (
+        <div className="error-banner" style={{
+          color: '#f87171',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          border: '1px solid rgba(239, 68, 68, 0.2)',
+          padding: '14px 20px',
+          borderRadius: '10px',
+          marginBottom: '25px',
+          fontFamily: "'DM Sans', sans-serif",
+          fontSize: '0.9rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          <span>⚠️</span> <span><strong>Alerte Système :</strong> {error}</span>
         </div>
+      )}
+
+      {/* KPI Cards */}
+      {loading ? (
+        <div style={{ color: '#7a6e8a', marginBottom: '20px', fontStyle: 'italic' }}>Chargement des données...</div>
+      ) : (
+        stats && (
+          <div className="kpi-grid">
+            <div className="kpi-card">
+              <div className="kpi-emoji">📚</div>
+              <div className="kpi-value">{stats.totalLivres}</div>
+              <div className="kpi-label">Livres</div>
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-emoji">🏷️</div>
+              <div className="kpi-value">{stats.totalCategories}</div>
+              <div className="kpi-label">Catégories</div>
+            </div>
+            {isAdmin && (
+              <div className="kpi-card">
+                <div className="kpi-emoji">👥</div>
+                <div className="kpi-value">{stats.totalUsers}</div>
+                <div className="kpi-label">Utilisateurs</div>
+              </div>
+            )}
+          </div>
+        )
       )}
 
       {/* Graphique livres par catégorie */}

@@ -7,24 +7,23 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService; // Interface standard requise
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class WebSecurityConfig {
 
-    // CORRECTION : On utilise l'interface standard Spring Security ici
     @Autowired
     private UserDetailsService userDetailsService;
 
@@ -36,8 +35,6 @@ public class WebSecurityConfig {
         return new AuthTokenFilter();
     }
 
-    // CORRECTION : Déclaration du Bean PasswordEncoder AVANT le provider pour
-    // éviter les conflits de lecture
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -45,14 +42,9 @@ public class WebSecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        // On passe directement le service dans le constructeur comme l'exige Spring
-        // Boot 4
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
-
-        // On configure le mot de passe, mais SANS appeler setUserDetailsService()
-        // derrière
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
-
         return authProvider;
     }
 
@@ -64,28 +56,32 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 1. ADD THIS LINE FIRST: Integrates the CorsFilter bean we created above
+                // Récupère automatiquement la configuration CORS depuis ta classe CorsConfig
                 .cors(cors -> cors.configure(http))
 
                 .csrf(csrf -> csrf.disable())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 2. ADD THIS LINE: Explicitly permits browser preflight checks to pass through
-                        // safely
+                        // Autorise les requêtes de vérification preflight des navigateurs (CORS)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Nouveau : stats dashboard et exports accessibles à tout utilisateur connecté
-                        .requestMatchers("/api/export/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
 
+                        // Routes d'authentification et documentation publiques
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/swagger/**", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs").permitAll()
+
+                        // Accès restreints selon les rôles
+                        .requestMatchers("/api/export/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
                         .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
-                        // Tout le monde (y compris USER) peut LIRE les catégories
-                        .requestMatchers(HttpMethod.GET, "/api/categories/**")
-                        .hasAnyAuthority("USER", "MANAGER", "ADMIN")
+
+                        // Gestion des catégories
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
                         .requestMatchers("/api/categories/**").hasAnyAuthority("ADMIN", "MANAGER")
+
+                        // Gestion des livres
                         .requestMatchers(HttpMethod.GET, "/api/livres/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
                         .requestMatchers("/api/livres/**").hasAnyAuthority("ADMIN", "MANAGER")
+
                         .anyRequest().authenticated());
 
         http.authenticationProvider(authenticationProvider());

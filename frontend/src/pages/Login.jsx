@@ -13,18 +13,47 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation(); // Bloque toute remontée d'événement HTML indésirable
     setError('');
     setLoading(true);
+    
     try {
-      const res = await axios.post('http://localhost:8080/api/auth/signin', {
+      // On utilise une instance vierge d'Axios pour contourner les intercepteurs globaux 
+      // qui forcent parfois un window.location.reload() sur les erreurs 401/403.
+      const res = await axios.create().post('http://localhost:8080/api/auth/signin', {
         username,
         password
       });
+
       // res.data = { accessToken, id, username, roles: ["ADMIN"] }
       saveAuth(res.data);
       navigate('/');
     } catch (err) {
-      setError("Identifiants invalides. Vérifiez votre nom d'utilisateur et mot de passe.");
+      console.error("Erreur d'authentification :", err);
+      
+      if (err.response) {
+        // Le serveur a répondu avec un code d'erreur (400, 401, 403, etc.)
+        const status = err.response.status;
+        const data = err.response.data;
+
+        if (status === 401 || status === 400) {
+          // Affiche le message précis du GlobalExceptionHandler s'il existe
+          if (data && data.message) {
+            setError(data.message);
+          } else {
+            setError("Identifiants invalides. Veuillez vérifier votre nom d'utilisateur et mot de passe.");
+          }
+        } else if (status === 403) {
+          setError(data?.message || "Accès refusé : Votre compte est désactivé ou restreint.");
+        } else {
+          setError(data?.message || `Une erreur système est survenue (Code: ${status}).`);
+        }
+      } else if (err.request) {
+        // Serveur Spring Boot éteint ou inaccessible
+        setError("Le serveur est injoignable. Veuillez vérifier votre connexion ou réessayer plus tard.");
+      } else {
+        setError("Une erreur inattendue est survenue lors de la tentative de connexion.");
+      }
     } finally {
       setLoading(false);
     }
@@ -32,7 +61,7 @@ const Login = () => {
 
   return (
     <div className="login-root">
-      {/* Left decorative panel */}
+      {/* Panneau décoratif gauche */}
       <div className="login-panel-left">
         <div className="login-brand">
           Bibliothèque<br />Centrale
@@ -56,12 +85,13 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Right form panel */}
+      {/* Panneau formulaire droit */}
       <div className="login-panel-right">
         <div className="login-form-box">
           <h2>Connexion</h2>
           <p>Accès au système de gestion</p>
 
+          {/* Affichage de la bannière d'erreur dynamique sans rechargement */}
           {error && <div className="login-error">{error}</div>}
 
           <form onSubmit={handleSubmit}>
@@ -71,9 +101,13 @@ const Login = () => {
                 type="text"
                 placeholder="nom_utilisateur"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => {
+                  setError(''); // Efface le message dès que l'utilisateur re-saisit
+                  setUsername(e.target.value);
+                }}
                 required
                 autoFocus
+                disabled={loading}
               />
             </div>
             <div className="login-field">
@@ -82,8 +116,12 @@ const Login = () => {
                 type="password"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setError(''); // Efface le message dès que l'utilisateur re-saisit
+                  setPassword(e.target.value);
+                }}
                 required
+                disabled={loading}
               />
             </div>
             <button type="submit" className="login-btn" disabled={loading}>

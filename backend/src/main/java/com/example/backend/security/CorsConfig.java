@@ -16,19 +16,19 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
-        
-        // Allows your React frontend to send cookies/auth headers
-        config.setAllowCredentials(true); 
-        
-        // Explicitly target your React app origin
-        config.setAllowedOrigins(List.of("http://localhost:5173")); 
-        
-        // Allow all standard headers including your Bearer Authorization token
+
+        // Permet au frontend React d'envoyer les headers d'authentification (Bearer JWT)
+        config.setAllowCredentials(true);
+
+        // 🟢 CORRECTION : On autorise explicitement le port 5174 (et le 5173 par sécurité)
+        config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5174"));
+
+        // Autorise les en-têtes standards requis pour les requêtes HTTP et JWT
         config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization"));
-        
-        // Allow all essential HTTP methods
+
+        // Autorise toutes les méthodes d'accès, y compris OPTIONS pour le preflight check
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        
+
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }

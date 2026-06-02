@@ -3,7 +3,6 @@ package com.example.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.AnyDiscriminatorImplicitValues;
 
 @Entity
 @Data
