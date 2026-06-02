@@ -53,35 +53,25 @@ public class WebSecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
+    // ... vos imports restent identiques
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // Récupère automatiquement la configuration CORS depuis ta classe CorsConfig
-                .cors(cors -> cors.configure(http))
-
-                .csrf(csrf -> csrf.disable())
+                .cors(cors -> {}) // Simplifié pour éviter l'appel direct à configure()
+                .csrf(csrf -> csrf.disable()) // CORRECTION : suppression du ";" ici
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Autorise les requêtes de vérification preflight des navigateurs (CORS)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // Routes d'authentification et documentation publiques
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/swagger/**", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs").permitAll()
-
-                        // Accès restreints selon les rôles
                         .requestMatchers("/api/export/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
                         .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
-
-                        // Gestion des catégories
                         .requestMatchers(HttpMethod.GET, "/api/categories/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
                         .requestMatchers("/api/categories/**").hasAnyAuthority("ADMIN", "MANAGER")
-
-                        // Gestion des livres
                         .requestMatchers(HttpMethod.GET, "/api/livres/**").hasAnyAuthority("USER", "MANAGER", "ADMIN")
                         .requestMatchers("/api/livres/**").hasAnyAuthority("ADMIN", "MANAGER")
-
                         .anyRequest().authenticated());
 
         http.authenticationProvider(authenticationProvider());

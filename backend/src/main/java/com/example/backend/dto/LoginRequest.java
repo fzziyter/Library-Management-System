@@ -8,6 +8,16 @@ public class LoginRequest {
     @NotBlank
     private String password;
 
+    // 1. Constructeur par défaut (Obligatoire pour Spring/Jackson)
+    public LoginRequest() {
+    }
+
+    // 2. Constructeur avec arguments (Facilite l'instanciation dans vos tests)
+    public LoginRequest(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
     // Getters & Setters
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }

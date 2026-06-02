@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Getter @Setter @NoArgsConstructor
+@Table(name = "\"user\"") // On force l'échappement pour H2
 public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
