@@ -92,7 +92,7 @@ const AdminUserManagement = () => {
             } else if (type === 'update') {
                 await axios.put(`http://localhost:8080/api/admin/users/${userId}`, {
                     username: username.trim(),
-                    roles: [{ name: role }] 
+                    roles: [role]
                 });
             }
             
